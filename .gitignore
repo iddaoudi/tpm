@@ -5,3 +5,4 @@ trace/CMakeCache.txt
 trace/CMakeFiles/
 trace/cmake_install.cmake
 trace/libtpm_trace.so
+trace/Makefile

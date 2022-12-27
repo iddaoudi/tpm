@@ -7,7 +7,7 @@ Task power management
 * Energy consumption management is done in the ```power``` directory using ZeroMQ and CPUFreq.
 
 ## Dependences
-* Clang10 (or later)
+* Clang10
 * Numactl (latest)
 * OpenBLAS (latest)
 * Lapacke (latest)
