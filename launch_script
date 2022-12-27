@@ -20,7 +20,7 @@ governor=ondemand
 ######################################################
 
 # LD_PRELOAD
-ROOT=home/xps/Argonne/Software
+ROOT=insert root path here!
 trace_so=trace/libtpm_trace.so
 omp_so=/${ROOT}/llvm-project/build-openmp/lib/libomp.so
 
