@@ -1,0 +1,7 @@
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/tpm_trace.dir
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/edit_cache.dir
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/rebuild_cache.dir
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/list_install_components.dir
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/install.dir
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/install/local.dir
+/home/xps/Argonne/Software/tpm/trace/CMakeFiles/install/strip.dir

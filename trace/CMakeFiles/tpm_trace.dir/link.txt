@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC   -DOMPT_MEASUREMENT_SUPPORT=1 -DOMPT_TRACING_SUPPORT=1 -g -shared -Wl,-soname,libtpm_trace.so -o libtpm_trace.so CMakeFiles/tpm_trace.dir/tpm_trace.c.o  -lzmq 
