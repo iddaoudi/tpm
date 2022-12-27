@@ -2,7 +2,7 @@
 Task power management
 
 ## Principle
-* Several applications in the ``algorithms``` directory;
+* Several applications in the ```algorithms``` directory;
 * Tracing them is done in the ```trace``` directory with ```tpm_library``` using OMPT callbacks;
 * Energy consumption management is done in the ```power``` directory using ZeroMQ and CPUFreq.
 
