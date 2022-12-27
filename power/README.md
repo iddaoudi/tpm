@@ -1,4 +1,4 @@
-* CHOLESKY | QR (4 different tasks)
+## CHOLESKY | QR (4 different tasks)
 - 1  potrf						| ormqr
 - 2  gemm		   			| tsqrt
 - 3  trsm		   			| tsmqr
@@ -16,7 +16,7 @@
 - 15 potrf trsm syrk gemm  | ormqr tsmqr geqrt tsqrt
 - 16 native
 
-* LU (3 different tasks)
+## LU (3 different tasks)
 - 1 getrf
 - 2 gemm
 - 3 trsm
