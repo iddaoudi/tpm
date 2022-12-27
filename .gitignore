@@ -1,1 +1,7 @@
 .vscode/
+algorithms/tpm_dense
+power/tpm_server
+trace/CMakeCache.txt
+trace/CMakeFiles/
+trace/cmake_install.cmake
+trace/libtpm_trace.so
