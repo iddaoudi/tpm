@@ -1,5 +1,5 @@
-CC=clang
-CXX=clang++
+CC=clang-10
+CXX=clang++-10
 
 CFLAGS+=-std=gnu99 -ggdb
 
