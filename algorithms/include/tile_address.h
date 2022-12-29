@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-inline static void *MATRIX_tile_address(tpm_desc A, int m, int n) {
-  size_t single_element_size = sizeof(double); // FIXME
+inline static void *tpm_tile_address(tpm_desc A, int m, int n) {
+  size_t single_element_size = sizeof(double);
   size_t offset = 0;
 
   /* Current implementation considers that matrix size % bloc size = 0 */

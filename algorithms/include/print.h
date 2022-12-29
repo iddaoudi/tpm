@@ -23,7 +23,6 @@ void tpm_print_matrix(tpm_desc A) {
   int matrix_counter = 0;
   int tile_counter = 0;
 
-  printf("Printing matrix:\n");
   for (int i = 0; i < A.matrix_size / A.tile_size; i++) {
     for (int j = 0; j < A.matrix_size / A.tile_size; j++) {
       double *dA = A(i, j);

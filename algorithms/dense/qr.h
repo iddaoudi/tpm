@@ -16,8 +16,6 @@
  * =====================================================================================
  */
 
-#include "common.h"
-
 void qr(tpm_desc A, tpm_desc S) {
   if (TPM_TRACE)
     tpm_downstream_start("qr", A.matrix_size, A.tile_size, NTH);

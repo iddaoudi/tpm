@@ -16,9 +16,6 @@
  * =====================================================================================
  */
 
-#include "../include/common.h"
-#include "assert.h"
-
 void cholesky(tpm_desc A) {
   if (TPM_TRACE)
     tpm_downstream_start("cholesky", A.matrix_size, A.tile_size, NTH);

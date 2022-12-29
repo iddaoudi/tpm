@@ -16,8 +16,6 @@
  * =====================================================================================
  */
 
-#include "srclu/dgetrf.h"
-
 void lu(tpm_desc A) {
   if (TPM_TRACE)
     tpm_downstream_start("lu", A.matrix_size, A.tile_size, NTH);

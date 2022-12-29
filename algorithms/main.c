@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include "include/common.h"
 #include "include/utils.h"
 
 int tpm_allocate_tile(int M, tpm_desc **desc, int B) {
@@ -89,17 +90,19 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
   tpm_matrix_desc_create(&A, ptr, BSIZE, MSIZE * MSIZE, BSIZE * BSIZE, MSIZE);
-  tpm_hermitian_positive_generator(*A);
 
+  printf("done2\n");
   /* Launch algorithms */
   double time_start, time_finish;
   if (!strcmp(algorithm, "cholesky")) {
+  	 tpm_hermitian_positive_generator(*A);
     time_start = omp_get_wtime();
 #pragma omp parallel
 #pragma omp master
     { cholesky(*A); }
     time_finish = omp_get_wtime();
   } else if (!strcmp(algorithm, "qr")) {
+  	 tpm_hermitian_positive_generator(*A);
     /* Workspace allocation for QR */
     tpm_desc *S = NULL;
     int ret = tpm_allocate_tile(MSIZE, &S, BSIZE);
@@ -109,17 +112,33 @@ int main(int argc, char *argv[]) {
 #pragma omp master
     { qr(*A, *S); }
     time_finish = omp_get_wtime();
-
     free(S->matrix);
     tpm_matrix_desc_destroy(&S);
   } else if (!strcmp(algorithm, "lu")) {
+  	 tpm_hermitian_positive_generator(*A);
     time_start = omp_get_wtime();
 #pragma omp parallel
 #pragma omp master
     { lu(*A); }
     time_finish = omp_get_wtime();
+  } else if (!strcmp(algorithm, "sparselu")) {
+	 double **M;
+	 printf("to generate...\n");
+	 tpm_sparse_allocate(&M, MSIZE, BSIZE);
+	 printf("memcpy done\n");
+	 time_start = omp_get_wtime();
+#pragma omp parallel
+#pragma omp master
+	 { sparselu(M, MSIZE, BSIZE); }
+    time_finish = omp_get_wtime();
   }
 
+//#ifdef TPM_MATRIX_DISPLAY
+//  printf("Matrix after run:\n");
+//  tpm_print_matrix(*A);
+//#endif
+
+  printf("done1\n");
   printf("%f\n", time_finish - time_start);
 
   free(A->matrix);

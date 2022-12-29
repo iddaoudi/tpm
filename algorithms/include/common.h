@@ -3,7 +3,7 @@
  *
  *       Filename:  common.h
  *
- *    Description:  Tracing functions
+ *    Description:  Common tracing functions for power management
  *
  *        Version:  1.0
  *        Created:  25/12/2022 19:30:35
@@ -16,7 +16,15 @@
  * =====================================================================================
  */
 
+#define _GNU_SOURCE
+
+#include <getopt.h>
+#include <sched.h>
+#include <sys/time.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #define tpm_STRING_SIZE 64
 

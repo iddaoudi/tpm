@@ -1,11 +1,11 @@
 # OMPT doesn't seem to be working properly with clang-15
 
-ROOT=...
+ROOT=/home/xps/Argonne/Software
 tpm_TRACE_LIB=${ROOT}/tpm/trace/libtpm_trace.so
 LLVM_OMP_LIB=${ROOT}/llvm-project/build-openmp
 
-CC=clang-10
-CXX=clang++-10
+CC=clang
+CXX=clang++
 
 CFLAGS+=-std=gnu99 -ggdb -rdynamic -ldl
 FLAGS_OPENMP=-fopenmp
