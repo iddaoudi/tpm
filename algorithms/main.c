@@ -80,67 +80,62 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  /* Matrix memory allocation, creation and making it Hermitian positive */
-  tpm_desc *A = NULL;
-  double *ptr = 0;
-  int error = posix_memalign((void **)&ptr, getpagesize(),
-                             MSIZE * MSIZE * sizeof(double));
-  if (error) {
-    printf("Problem allocating contiguous memory.\n");
-    exit(EXIT_FAILURE);
-  }
-  tpm_matrix_desc_create(&A, ptr, BSIZE, MSIZE * MSIZE, BSIZE * BSIZE, MSIZE);
-
-  printf("done2\n");
   /* Launch algorithms */
   double time_start, time_finish;
-  if (!strcmp(algorithm, "cholesky")) {
-  	 tpm_hermitian_positive_generator(*A);
+  if (strcmp(algorithm, "sparselu")) {
+    /* Dense matrix memory allocation, creation and making it Hermitian positive
+     */
+    tpm_desc *A = NULL;
+    double *ptr = NULL;
+    int error = posix_memalign((void **)&ptr, getpagesize(),
+                               MSIZE * MSIZE * sizeof(double));
+    if (error) {
+      printf("Problem allocating contiguous memory.\n");
+      exit(EXIT_FAILURE);
+    }
+    tpm_matrix_desc_create(&A, ptr, BSIZE, MSIZE * MSIZE, BSIZE * BSIZE, MSIZE);
+    if (!strcmp(algorithm, "cholesky")) {
+      tpm_hermitian_positive_generator(*A);
+      time_start = omp_get_wtime();
+#pragma omp parallel
+#pragma omp master
+      { cholesky(*A); }
+      time_finish = omp_get_wtime();
+    } else if (!strcmp(algorithm, "qr")) {
+      tpm_hermitian_positive_generator(*A);
+      /* Workspace allocation for QR */
+      tpm_desc *S = NULL;
+      int ret = tpm_allocate_tile(MSIZE, &S, BSIZE);
+      assert(ret == 0);
+      time_start = omp_get_wtime();
+#pragma omp parallel
+#pragma omp master
+      { qr(*A, *S); }
+      time_finish = omp_get_wtime();
+      free(S->matrix);
+      tpm_matrix_desc_destroy(&S);
+    } else if (!strcmp(algorithm, "lu")) {
+      tpm_hermitian_positive_generator(*A);
+      time_start = omp_get_wtime();
+#pragma omp parallel
+#pragma omp master
+      { lu(*A); }
+      time_finish = omp_get_wtime();
+    }
+    free(A->matrix);
+    tpm_matrix_desc_destroy(&A);
+  } else {
+    /* Sparse matrix memory allocation and creation */
+    double **M;
+#pragma omp parallel
+#pragma omp master
+    tpm_sparse_allocate(&M, MSIZE, BSIZE);
+
     time_start = omp_get_wtime();
-#pragma omp parallel
-#pragma omp master
-    { cholesky(*A); }
+    sparselu(M, MSIZE, BSIZE);
     time_finish = omp_get_wtime();
-  } else if (!strcmp(algorithm, "qr")) {
-  	 tpm_hermitian_positive_generator(*A);
-    /* Workspace allocation for QR */
-    tpm_desc *S = NULL;
-    int ret = tpm_allocate_tile(MSIZE, &S, BSIZE);
-    assert(ret == 0);
-    time_start = omp_get_wtime();
-#pragma omp parallel
-#pragma omp master
-    { qr(*A, *S); }
-    time_finish = omp_get_wtime();
-    free(S->matrix);
-    tpm_matrix_desc_destroy(&S);
-  } else if (!strcmp(algorithm, "lu")) {
-  	 tpm_hermitian_positive_generator(*A);
-    time_start = omp_get_wtime();
-#pragma omp parallel
-#pragma omp master
-    { lu(*A); }
-    time_finish = omp_get_wtime();
-  } else if (!strcmp(algorithm, "sparselu")) {
-	 double **M;
-	 printf("to generate...\n");
-	 tpm_sparse_allocate(&M, MSIZE, BSIZE);
-	 printf("memcpy done\n");
-	 time_start = omp_get_wtime();
-#pragma omp parallel
-#pragma omp master
-	 { sparselu(M, MSIZE, BSIZE); }
-    time_finish = omp_get_wtime();
+    free(M);
   }
 
-//#ifdef TPM_MATRIX_DISPLAY
-//  printf("Matrix after run:\n");
-//  tpm_print_matrix(*A);
-//#endif
-
-  printf("done1\n");
   printf("%f\n", time_finish - time_start);
-
-  free(A->matrix);
-  tpm_matrix_desc_destroy(&A);
 }
