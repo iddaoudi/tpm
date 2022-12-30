@@ -18,8 +18,8 @@
  */
 
 double *tpm_allocate_empty_block(int tile_size) {
-  int i = 0, j = 0;
-  double *p = NULL, *q = NULL;
+  int i, j;
+  double *p, *q;
 
   p = (double *)malloc(tile_size * tile_size * sizeof(double));
   q = p;
