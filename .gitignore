@@ -1,5 +1,5 @@
 .vscode/
-algorithms/tpm_dense
+algorithms/tpm_benchmark
 power/tpm_server
 trace/CMakeCache.txt
 trace/CMakeFiles/
