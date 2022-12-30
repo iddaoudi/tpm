@@ -1,24 +1,32 @@
 # OMPT doesn't seem to be working properly with clang-15
 
-ROOT=/home/xps/Argonne/Software
-tpm_TRACE_LIB=${ROOT}/tpm/trace/libtpm_trace.so
-LLVM_OMP_LIB=${ROOT}/llvm-project/build-openmp
+# Path
+ROOT=/home/xps/Work/Software
 
+# Compiler
 CC=clang
 CXX=clang++
 
+# C flags
 CFLAGS+=-std=gnu99 -ggdb -rdynamic -ldl
-FLAGS_OPENMP=-fopenmp
+
+# Trace library
+TPM_TRACE_LIB=${ROOT}/tpm/trace/libtpm_trace.so
+
+# OpenMP
+LLVM_OMP_LIB=${ROOT}/llvm-project/build-openmp
 OPENMP_LIBRARY=-lomp -I$(LLVM_OMP_LIB)/include -L$(LLVM_OMP_LIB)/lib
 
-LAPACKE_LIB=$(shell pkg-config --libs openblas) $(shell pkg-config --libs lapacke)
+# OpenBLAS
+LAPACKE_LIB=${ROOT}/OpenBLAS/build
+LAPACKE_LIBRARY=-lopenblas -I${LAPACKE_LIB}/include -L${LAPACKE_LIB}/lib
 
-all: tpm_dense
+all: tpm_benchmark
 
-tpm_dense: main.c $(wildcard include/*.h dense/*.h dense/srcqr/*.h dense/srclu/*.h)
-	$(CC) $(CFLAGS) $(FLAGS_OPENMP) $< -o $@ $(OPENMP_LIBRARY) $(LAPACKE_LIB)
+tpm_benchmark: main.c $(wildcard include/*.h dense/*.h dense/srcqr/*.h dense/srclu/*.h sparse/*.h srcslu/*.h)
+	$(CC) $(CFLAGS) $< -o $@ $(OPENMP_LIBRARY) $(LAPACKE_LIBRARY)
 
-.PHONY: all tpm_dense clean
+.PHONY: all tpm_benchmark clean
 
 clean:
 	$(RM) tpm_dense *~
