@@ -8,7 +8,8 @@ CC=clang
 CXX=clang++
 
 # C flags
-CFLAGS+=-std=gnu99 -ggdb -rdynamic -ldl
+CFLAGS+=-std=gnu99 -O2 -rdynamic -ldl
+FLAGS_OPENMP=-fopenmp
 
 # Trace library
 TPM_TRACE_LIB=${ROOT}/tpm/trace/libtpm_trace.so
@@ -24,7 +25,7 @@ LAPACKE_LIBRARY=-lopenblas -I${LAPACKE_LIB}/include -L${LAPACKE_LIB}/lib
 all: tpm_benchmark
 
 tpm_benchmark: main.c $(wildcard include/*.h dense/*.h dense/srcqr/*.h dense/srclu/*.h sparse/*.h srcslu/*.h)
-	$(CC) $(CFLAGS) $< -o $@ $(OPENMP_LIBRARY) $(LAPACKE_LIBRARY)
+	$(CC) $(CFLAGS) $(FLAGS_OPENMP) $< -o $@ $(OPENMP_LIBRARY) $(LAPACKE_LIBRARY)
 
 .PHONY: all tpm_benchmark clean
 
