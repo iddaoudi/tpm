@@ -37,6 +37,7 @@ char *ALG = NULL;
 int MSIZE = 0;
 int BSIZE = 0;
 int NTH = 0;
+int TPM_POWER = 0;
 
 // clang-format off
 #include "include/common.h"

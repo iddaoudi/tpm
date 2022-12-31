@@ -3,10 +3,10 @@ project(tpm_trace)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # set up path
-set(ROOT /home/xps/Argonne/Software)
+set(ROOT /home/xps/Work/Software)
 set(OMP_INSTALL ${ROOT}/llvm-project/build-openmp)
 set(OMP_LIB_PATH ${OMP_INSTALL}/lib)
 set(OMP_INCLUDE ${OMP_INSTALL}/include)

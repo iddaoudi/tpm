@@ -38,13 +38,18 @@ extern void tpm_trace_start(char *algorithm, int matrix_size, int tile_size,
 
 int ompt_initialize(ompt_function_lookup_t lookup, int initial_device_num,
                     ompt_data_t *data_from_tool) {
-  /* Intialize ZMQ context and request */
-  context = zmq_ctx_new();
-  request = zmq_socket(context, ZMQ_PUSH);
-  /* Connect to client and send request to start energy measurements */
-  tpm_zmq_connect_client(request);
-  tpm_zmq_send_signal(request, "energy 0");
+  
+  TPM_POWER = atoi(getenv("TPM_POWER"));
+  if (TPM_POWER) {
+    /* Intialize ZMQ context and request */
+    context = zmq_ctx_new();
+    request = zmq_socket(context, ZMQ_PUSH);
+    /* Connect to client and send request to start energy measurements */
+    tpm_zmq_connect_client(request);
+    tpm_zmq_send_signal(request, "energy 0");
+  }
 
+  
   /* Runtime entrypoint */
   ompt_set_callback_t ompt_set_callback =
       (ompt_set_callback_t)lookup("ompt_set_callback");

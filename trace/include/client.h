@@ -29,7 +29,7 @@ void tpm_zmq_connect_client(void *request) {
   zmq_setsockopt(request, ZMQ_SNDHWM, &num, sizeof(int));
   zmq_setsockopt(request, ZMQ_RCVHWM, &num, sizeof(int));
 
-  zmq_connect(request, "tcp://localhost:5555");
+  zmq_connect(request, "tcp://127.0.0.1:5555");
 }
 
 int tpm_zmq_send_signal(void *request, char *task_and_cpu) {
