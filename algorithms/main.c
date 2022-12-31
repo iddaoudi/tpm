@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
     }
     tpm_matrix_desc_create(&A, ptr, BSIZE, MSIZE * MSIZE, BSIZE * BSIZE, MSIZE);
+    
     if (!strcmp(algorithm, "cholesky")) {
       tpm_hermitian_positive_generator(*A);
       time_start = omp_get_wtime();

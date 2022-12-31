@@ -84,8 +84,6 @@ static void tpm_sparse_generator(double *M[], int matrix_size, int tile_size) {
   /* generating the structure */
   for (m = 0; m < matrix_size; m++) {
     for (n = 0; n < matrix_size; n++) {
-#pragma omp task shared(M)
-      {
         double *p;
         /* computing null entries */
         zero_element = 0;
@@ -123,10 +121,8 @@ static void tpm_sparse_generator(double *M[], int matrix_size, int tile_size) {
         } else {
           M[m * matrix_size + n] = NULL;
         }
-      }
     }
   }
-#pragma omp taskwait
 }
 
 static void tpm_sparse_allocate(double ***M, int matrix_size, int tile_size) {
