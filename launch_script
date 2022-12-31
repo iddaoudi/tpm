@@ -2,83 +2,66 @@
 
 # Parameters
 algo=(sparselu)
-msize=(128)
-bsize=(64)
+msize=(32)
+bsize=(16)
 threads=(7)		# numactl --physcpubind ---> number of threads - 1
 numa=7			# numactl --membind ---> number of cores per NUMA node
 targets=("6") # "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
 
-export TPM_MACHINE=local
-
-export OMP_PLACES=cores
-export OMP_PROC_BIND=close
-export TPM_TRACE=0
+export TPM_TRACE=1
+export TPM_POWER=1
 
 frequency=min
 governor=ondemand
 
+export TPM_MACHINE=local
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+
 ######################################################
 
 # LD_PRELOAD
-ROOT=home/xps/Argonne/Software
-trace_so=trace/libtpm_trace.so
-omp_so=/${ROOT}/llvm-project/build-openmp/lib/libomp.so
+ROOT=/home/xps/Work/Software
+trace_so=${ROOT}/tpm/trace/libtpm_trace.so
+omp_so=${ROOT}/llvm-project/build-openmp/lib/libomp.so
 
 ######################################################
 
 # Compile trace library part
 if [[ ${TPM_TRACE} -eq 1 ]]
 then
-	cd trace
-	rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt Makefile
-	cmake .
-	make clean && make
-	cd -
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "TPM bash log: Trace OK" 
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+    cd trace
+    rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt Makefile
+    cmake .
+    make clean && make -s
+    cd -
+    echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+    echo "TPM bash log: Trace OK" 
+    echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 fi
 
 # Compile source part
 cd algorithms
-make clean && make
+make clean && make -s
 cd -
-echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo "TPM bash log: Algorithms OK" 
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 
 # Compile power control part
-if [[ ${TPM_TRACE} -eq 1 ]]
+if [[ ${TPM_POWER} -eq 1 ]]
 then
 	cd power
-	make clean && make
+	make clean && make -s
 	cd -
 	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 	echo "TPM bash log: Power OK"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 fi
 
 ######################################################
 
 FILE_NAME=
-# warmup
-if [[ ${TPM_TRACE} -eq 1 ]]
-then
-	sudo power/tpm_server 0 ondemand max 16 test &
-	ps -ef | grep tpm_server | grep -v grep | awk '{print $2}' | sudo xargs -r kill -9
-	sleep 1
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "TPM bash log: Warmup OK"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-fi
 
 for algorithm in ${algo[*]}
 do
@@ -91,43 +74,42 @@ do
 				for target in ${targets[*]}
 				do
 					echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-					echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 					echo "TPM bash log: Launching" $algorithm "run with parameters" $matrix $tile $target "for" $(expr $thread + 1) "threads"
-					echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 					echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 					export OMP_NUM_THREADS=$(expr $thread + 1)
 	
 					# Start server
-					if [[ ${TPM_TRACE} -eq 1 ]]
+					if [[ ${TPM_POWER} -eq 1 ]]
 					then
 						sudo -E power/tpm_server $(expr $thread + 1) $governor $frequency $target ${algo} & 
+	                    sleep 1
+                        echo "BASH LAUNCHED SERVER"
 					fi
-	
 					# Launch runs
 					if [[ $thread -gt $numa ]]
 					then
 						if [[ ${TPM_TRACE} -eq 1 ]]
 						then
-							result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0,1 algorithms/tpm_dense -a $algorithm -m $matrix -b $tile)
+							result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 						else
-							result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0,1 algorithms/tpm_dense -a $algorithm -m $matrix -b $tile)
+							result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 						fi
 					else
 						if [[ ${TPM_TRACE} -eq 1 ]]
 						then
-							result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_dense -a $algorithm -m $matrix -b $tile)
-							#LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_dense -a $algorithm -m $matrix -b $tile
+                            #result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+							LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
+							#LD_PRELOAD=$omp_so:$trace_so gdb --args algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
 						else
-							echo "HERE"
-							#result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_dense -a $algorithm -m $matrix -b $tile)
-							LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_dense -a $algorithm -m $matrix -b $tile
-							#LD_PRELOAD=$omp_so gdb --args algorithms/tpm_dense -a $algorithm -m $matrix -b $tile
+							#result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+							LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
+							#LD_PRELOAD=$omp_so:$trace_so gdb --args algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
 						fi
 					fi
-					if [[ ${TPM_TRACE} -eq 1 ]]
-					then
-						ps -ef | grep tpm_server | grep -v grep | awk '{print $2}' | sudo xargs -r kill -9
-					fi
+					#if [[ ${TPM_POWER} -eq 1 ]]
+					#then
+					#	ps -ef | grep tpm_server | grep -v grep | awk '{print $2}' | sudo xargs -r kill -9
+					#fi
 					FILE_NAME=time_${algorithm}_${matrix}_${tile}_$(expr $thread + 1)
 #cat <<EOF >> ${FILE_NAME}.dat
 #$result 
@@ -139,7 +121,8 @@ do
 		done
 	done
 done
-if [[ ${TPM_TRACE} -eq 1 ]]
+echo "Finished"
+if [[ ${TPM_POWER} -eq 1 ]]
 then
 	ps -ef | grep tpm_server | grep -v grep | awk '{print $2}' | sudo xargs -r kill -9
 fi
