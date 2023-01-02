@@ -6,3 +6,8 @@ trace/CMakeFiles/
 trace/cmake_install.cmake
 trace/libtpm_trace.so
 trace/Makefile
+trace_no_ompt/CMakeCache.txt
+trace_no_ompt/CMakeFiles/
+trace_no_ompt/cmake_install.cmake
+trace_no_ompt/libtpm_trace.so
+trace_no_ompt/Makefile

@@ -35,6 +35,7 @@ int tpm_allocate_tile(int M, tpm_desc **desc, int B) {
 int main(int argc, char *argv[]) {
   NTH = atoi(getenv("OMP_NUM_THREADS"));
   TPM_TRACE = atoi(getenv("TPM_TRACE"));
+  TPM_TRACE_NO_OMPT = atoi(getenv("TPM_TRACE_NO_OMPT"));
 
   /* Command line arguments parsing */
   int arguments;
@@ -137,6 +138,7 @@ int main(int argc, char *argv[]) {
     time_finish = omp_get_wtime();
     free(M);
   }
-
+  if (TPM_TRACE_NO_OMPT)
+    tpm_upstream_finalize();
   printf("%f\n", time_finish - time_start);
 }

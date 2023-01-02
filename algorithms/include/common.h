@@ -26,11 +26,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define tpm_STRING_SIZE 64
+#define TPM_STRING_SIZE 64
 
 /* External functions for tracing */
 void __attribute__((weak))
 tpm_start(char *algorithm, int matrix_size, int tile_size, int nthreads);
+void __attribute__((weak)) tpm_finalize();
 void __attribute__((weak)) tpm_set_task_name(const char *name);
 void __attribute__((weak)) tpm_set_task_cpu_node(int cpu, int node, char *name);
 void __attribute__((weak)) tpm_get_task_time(struct timeval start, struct timeval end, char *name);
@@ -38,6 +39,10 @@ void __attribute__((weak)) tpm_get_task_time(struct timeval start, struct timeva
 extern inline void tpm_downstream_start(char *algorithm, int matrix_size,
                                         int tile_size, int nthreads) {
   tpm_start(algorithm, matrix_size, tile_size, nthreads);
+}
+
+extern inline void tpm_upstream_finalize() {
+    tpm_finalize();
 }
 
 extern inline void tpm_upstream_set_task_name(const char *name) {
@@ -56,8 +61,8 @@ extern inline void tpm_upstream_get_task_time(struct timeval start,
 
 /* Give a task name a unique identification according to iterations */
 char *tpm_unique_task_identifier(char *name, int a, int b, int c) {
-  char *tmp_name = (char *)malloc(tpm_STRING_SIZE * sizeof(char));
-  memset(tmp_name, '\0', tpm_STRING_SIZE);
+  char *tmp_name = (char *)malloc(TPM_STRING_SIZE * sizeof(char));
+  memset(tmp_name, '\0', TPM_STRING_SIZE);
   strcpy(tmp_name, name);
 
   size_t sizeof_integer = sizeof(int);

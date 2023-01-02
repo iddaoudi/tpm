@@ -21,7 +21,7 @@
 #include "lapacke.h"
 #include <omp.h>
 
-int MSIZE, BSIZE, NTH, TPM_TRACE;
+int MSIZE, BSIZE, NTH, TPM_TRACE, TPM_TRACE_NO_OMPT;
 
 #define A(m, n) tpm_tile_address(A, m, n)
 #define B(m, n) tpm_tile_address(B, m, n)
