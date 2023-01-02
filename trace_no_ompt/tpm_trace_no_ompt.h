@@ -22,10 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define TPM_STRING_SIZE 32
+#define TPM_FILENAME_SIZE 32
 
-int matrix_size, tile_size, n_threads;
+int matrix_size, tile_size, n_threads, TPM_POWER;
 int order = 0;
 const char *new_name = NULL;
 char *algorithm;
@@ -33,8 +35,9 @@ char *algorithm;
 // clang-format off
 #include "include/cvector.h"
 #include "include/tpm_task.h"
-#include "include/log.h"
 #include "include/hashmap.h"
+#include "include/common.h"
+#include "include/client.h"
 // clang-format on
 
 bool user_iter(const void *item, void *udata);

@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Parameters
-algo=(qr)
-msize=(1024)
-bsize=(16)
+algo=(sparselu)
+msize=(128)
+bsize=(64)
 threads=(7)		# numactl --physcpubind ---> number of threads - 1
 numa=7			# numactl --membind ---> number of cores per NUMA node
 targets=("6") # "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
 
-export TPM_TRACE=1
-export TPM_TRACE_NO_OMPT=0
-export TPM_POWER=0
+export TPM_TRACE=0
+export TPM_TRACE_NO_OMPT=1
+export TPM_POWER=1
 
 frequency=min
 governor=ondemand
@@ -124,12 +124,12 @@ do
 					#	ps -ef | grep tpm_server | grep -v grep | awk '{print $2}' | sudo xargs -r kill -9
 					#fi
 					FILE_NAME=time_${algorithm}_${matrix}_${tile}_$(expr $thread + 1)
-#cat <<EOF >> ${FILE_NAME}.dat
-#$result 
-#EOF
+cat <<EOF >> ${FILE_NAME}.dat
+$result 
+EOF
 				done
-#mkdir results/${TPM_MACHINE}_${algorithm}_${matrix}_${tile}_${thread}_${frequency}
-#mv *.dat results/${TPM_MACHINE}_${algorithm}_${matrix}_${tile}_${thread}_${frequency}
+mkdir results/${TPM_MACHINE}_${algorithm}_${matrix}_${tile}_${thread}_${frequency}
+mv *.dat results/${TPM_MACHINE}_${algorithm}_${matrix}_${tile}_${thread}_${frequency}
 			done
 		done
 	done

@@ -29,7 +29,7 @@ FILE *file;
 bool user_iter(const void *item, void *udata) {
     tpm_task_t *user = item;
     double tmp = user->end_time - user->start_time;   // in us
-	fprintf(file, "%s, %f\n", user->name, tmp);               // in us
+	fprintf(file, "%s, %f\n", user->name, tmp*1e-3);  // in ms
     return true;
 }
 
@@ -59,7 +59,15 @@ void tpm_task_create(const char *name) {
 
 extern void tpm_trace_start(char *upstream_algorithm, int upstream_matrix_size,
                             int upstream_tile_size, int upstream_n_threads) {
-  printf("Tool initialized.\n");
+  TPM_POWER = atoi(getenv("TPM_POWER"));
+  if (TPM_POWER) {
+    /* Intialize ZMQ context and request */
+    context = zmq_ctx_new();
+    request = zmq_socket(context, ZMQ_PUSH);
+    /* Connect to client and send request to start energy measurements */
+    tpm_zmq_connect_client(request);
+    tpm_zmq_send_signal(request, "energy 0");
+  }
   algorithm = upstream_algorithm;
   matrix_size = upstream_matrix_size;
   tile_size = upstream_tile_size;
@@ -78,6 +86,8 @@ extern void tpm_trace_set_task_name(const char *name) {
  * the corresponding task object has already been created */
 extern void tpm_trace_set_task_cpu_node(int cpu, int node, char *input_name) {
   pthread_mutex_lock(&mutex);
+  char *task_and_cpu = tpm_task_and_cpu_string(input_name, cpu);
+  tpm_zmq_send_signal(request, task_and_cpu);
   tpm_task_t *task = hashmap_get(map, &(tpm_task_t){ .name = input_name });
   if (task != NULL) {
     task->cpu = cpu;
@@ -98,7 +108,6 @@ extern void tpm_trace_get_task_time(struct timeval start, struct timeval end,
 }
 
 extern void tpm_trace_finalize() {
-  printf("size = %d\n", hashmap_count(map));
   char file_name[TPM_FILENAME_SIZE];
   snprintf(file_name, TPM_FILENAME_SIZE, "tasks_%s_%d_%d_%d.dat", algorithm,
            matrix_size, tile_size, n_threads);
@@ -109,5 +118,9 @@ extern void tpm_trace_finalize() {
   hashmap_scan(map, user_iter, file);
   pthread_mutex_destroy(&mutex);
   hashmap_free(map);
-  printf("Tool is done.\n");
+
+  /* Send request to end energy measurements and close the socket connexion */
+  tpm_zmq_send_signal(request, "energy 1");
+  tpm_zmq_send_signal(request, "end");
+  tpm_zmq_close(request, context);
 }

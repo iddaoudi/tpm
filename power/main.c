@@ -38,6 +38,7 @@
 #include "control/cholesky.h"
 #include "control/qr.h"
 #include "control/lu.h"
+#include "control/sparselu.h"
 // clang-format on
 
 int MAX_CPUS, selected_case;
@@ -103,7 +104,10 @@ int start_exp() {
     else if (!strcmp(algorithm, "lu"))
       lu_control(selected_case, task, cpu, selected_frequency,
                  original_frequency);
-
+    else if (!strcmp(algorithm, "sparselu"))
+      sparselu_control(selected_case, task, cpu, selected_frequency,
+                 original_frequency);
+    
     if (strcmp(task, "energy") == 0) {
       /* Start measuring energy */
       if (cpu == 0) {

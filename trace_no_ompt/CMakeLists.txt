@@ -23,5 +23,5 @@ set(SOURCE_FILES
 
 include_directories(${OMP_INCLUDE})
 add_library(tpm_trace_no_ompt SHARED ${SOURCE_FILES})
-target_link_libraries(tpm_trace_no_ompt)
+target_link_libraries(tpm_trace_no_ompt -lzmq)
 install(TARGETS tpm_trace_no_ompt DESTINATION lib)
