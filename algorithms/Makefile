@@ -30,4 +30,4 @@ tpm_benchmark: main.c $(wildcard include/*.h dense/*.h dense/srcqr/*.h dense/src
 .PHONY: all tpm_benchmark clean
 
 clean:
-	$(RM) tpm_dense *~
+	$(RM) tpm_benchmark *~
