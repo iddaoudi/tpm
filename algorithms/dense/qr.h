@@ -17,7 +17,7 @@
  */
 
 void qr(tpm_desc A, tpm_desc S) {
-  if (TPM_TRACE)
+  if (TPM_TRACE || TPM_TRACE_NO_OMPT)
     tpm_downstream_start("qr", A.matrix_size, A.tile_size, NTH);
   int k = 0, m = 0, n = 0;
   for (k = 0; k < A.matrix_size / A.tile_size; k++) {
@@ -25,7 +25,7 @@ void qr(tpm_desc A, tpm_desc S) {
     double *tileS = S(k, k);
 
     char *name_with_id_char = tpm_unique_task_identifier("geqrt", k, m, n);
-    if (TPM_TRACE)
+    if (TPM_TRACE || TPM_TRACE_NO_OMPT)
       tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(inout                                                  \
                         : tileA [0:S.tile_size * S.tile_size])                 \
@@ -38,7 +38,7 @@ void qr(tpm_desc A, tpm_desc S) {
 
       unsigned int cpu, node;
       getcpu(&cpu, &node);
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
       gettimeofday(&start, NULL);
@@ -46,7 +46,7 @@ void qr(tpm_desc A, tpm_desc S) {
                  S.tile_size, &tho[0], &work[0]);
       gettimeofday(&end, NULL);
 
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_get_task_time(start, end, name_with_id_char);
     }
     for (n = k + 1; n < A.matrix_size / A.tile_size; n++) {
@@ -55,7 +55,7 @@ void qr(tpm_desc A, tpm_desc S) {
       double *tileB = A(k, n);
 
       char *name_with_id_char = tpm_unique_task_identifier("ormqr", k, m, n);
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(in                                                     \
                         : tileA [0:S.tile_size * S.tile_size],                 \
@@ -68,7 +68,7 @@ void qr(tpm_desc A, tpm_desc S) {
 
         unsigned int cpu, node;
         getcpu(&cpu, &node);
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
         gettimeofday(&start, NULL);
@@ -77,7 +77,7 @@ void qr(tpm_desc A, tpm_desc S) {
                    S.tile_size);
         gettimeofday(&end, NULL);
 
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_get_task_time(start, end, name_with_id_char);
       }
     }
@@ -87,7 +87,7 @@ void qr(tpm_desc A, tpm_desc S) {
       double *tileB = A(m, k);
 
       char *name_with_id_char = tpm_unique_task_identifier("tsqrt", k, m, n);
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(inout                                                  \
                         : tileA [0:S.tile_size * S.tile_size],                 \
@@ -101,7 +101,7 @@ void qr(tpm_desc A, tpm_desc S) {
 
         unsigned int cpu, node;
         getcpu(&cpu, &node);
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
         gettimeofday(&start, NULL);
@@ -109,7 +109,7 @@ void qr(tpm_desc A, tpm_desc S) {
                    S.tile_size, &tho[0], &work[0]);
         gettimeofday(&end, NULL);
 
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_get_task_time(start, end, name_with_id_char);
       }
       for (n = k + 1; n < A.matrix_size / A.tile_size; n++) {
@@ -119,7 +119,7 @@ void qr(tpm_desc A, tpm_desc S) {
         double *tileC = A(m, k);
 
         char *name_with_id_char = tpm_unique_task_identifier("tsmqr", k, m, n);
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(inout                                                  \
                         : tileA [0:S.tile_size * S.tile_size],                 \
@@ -133,7 +133,7 @@ void qr(tpm_desc A, tpm_desc S) {
 
           unsigned int cpu, node;
           getcpu(&cpu, &node);
-          if (TPM_TRACE)
+          if (TPM_TRACE || TPM_TRACE_NO_OMPT)
             tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
           gettimeofday(&start, NULL);
@@ -143,7 +143,7 @@ void qr(tpm_desc A, tpm_desc S) {
                      &work[0], A.tile_size);
           gettimeofday(&end, NULL);
 
-          if (TPM_TRACE)
+          if (TPM_TRACE || TPM_TRACE_NO_OMPT)
             tpm_upstream_get_task_time(start, end, name_with_id_char);
         }
       }

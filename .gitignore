@@ -9,5 +9,5 @@ trace/Makefile
 trace_no_ompt/CMakeCache.txt
 trace_no_ompt/CMakeFiles/
 trace_no_ompt/cmake_install.cmake
-trace_no_ompt/libtpm_trace.so
+trace_no_ompt/libtpm_trace_no_ompt.so
 trace_no_ompt/Makefile

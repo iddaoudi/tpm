@@ -17,14 +17,14 @@
  */
 
 void lu(tpm_desc A) {
-  if (TPM_TRACE)
+  if (TPM_TRACE || TPM_TRACE_NO_OMPT)
     tpm_downstream_start("lu", A.matrix_size, A.tile_size, NTH);
   int k = 0, m = 0, n = 0;
   for (k = 0; k < A.matrix_size / A.tile_size; k++) {
     double *tileA = A(k, k);
 
 	 char *name_with_id_char = tpm_unique_task_identifier("getrf", k, m, n);
-    if (TPM_TRACE)
+    if (TPM_TRACE || TPM_TRACE_NO_OMPT)
       tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(inout : tileA[0])
     {
@@ -32,14 +32,14 @@ void lu(tpm_desc A) {
 
       unsigned int cpu, node;
       getcpu(&cpu, &node);
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
       gettimeofday(&start, NULL);
       tpm_dgetrf(A.tile_size, tileA, A.tile_size);
       gettimeofday(&end, NULL);
 
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_get_task_time(start, end, name_with_id_char);
     }
     for (m = k + 1; m < A.matrix_size / A.tile_size; m++) {
@@ -47,7 +47,7 @@ void lu(tpm_desc A) {
       double *tileB = A(m, k);
 
       char *name_with_id_char = tpm_unique_task_identifier("trsm", k, m, n);
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(in                                                     \
                         : tileA [0:A.tile_size * A.tile_size])                 \
@@ -58,7 +58,7 @@ void lu(tpm_desc A) {
 
         unsigned int cpu, node;
         getcpu(&cpu, &node);
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
         gettimeofday(&start, NULL);
@@ -67,7 +67,7 @@ void lu(tpm_desc A) {
                     A.tile_size, tileB, A.tile_size);
         gettimeofday(&end, NULL);
 
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_get_task_time(start, end, name_with_id_char);
       }
     }
@@ -76,7 +76,7 @@ void lu(tpm_desc A) {
       double *tileB = A(k, n);
 
       char *name_with_id_char = tpm_unique_task_identifier("trsm", k, m, n);
-      if (TPM_TRACE)
+      if (TPM_TRACE || TPM_TRACE_NO_OMPT)
         tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(in                                                     \
                         : tileA [0:A.tile_size * A.tile_size])                 \
@@ -87,7 +87,7 @@ void lu(tpm_desc A) {
 
         unsigned int cpu, node;
         getcpu(&cpu, &node);
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
         gettimeofday(&start, NULL);
@@ -96,7 +96,7 @@ void lu(tpm_desc A) {
                     A.tile_size, tileB, A.tile_size);
         gettimeofday(&end, NULL);
 
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_get_task_time(start, end, name_with_id_char);
       }
       for (m = k + 1; m < A.matrix_size / A.tile_size; m++) {
@@ -105,7 +105,7 @@ void lu(tpm_desc A) {
         double *tileC = A(m, n);
 
         char *name_with_id_char = tpm_unique_task_identifier("gemm", k, m, n);
-        if (TPM_TRACE)
+        if (TPM_TRACE || TPM_TRACE_NO_OMPT)
           tpm_upstream_set_task_name(name_with_id_char);
 #pragma omp task depend(in                                                     \
                         : tileA [0:A.tile_size * A.tile_size],                 \
@@ -117,7 +117,7 @@ void lu(tpm_desc A) {
 
           unsigned int cpu, node;
           getcpu(&cpu, &node);
-          if (TPM_TRACE)
+          if (TPM_TRACE || TPM_TRACE_NO_OMPT)
             tpm_upstream_set_task_cpu_node(cpu, node, name_with_id_char);
 
           gettimeofday(&start, NULL);
@@ -126,7 +126,7 @@ void lu(tpm_desc A) {
                       A.tile_size, 1.0, tileC, A.tile_size);
           gettimeofday(&end, NULL);
 
-          if (TPM_TRACE)
+          if (TPM_TRACE || TPM_TRACE_NO_OMPT)
             tpm_upstream_get_task_time(start, end, name_with_id_char);
         }
       }
