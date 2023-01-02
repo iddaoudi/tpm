@@ -1,15 +1,16 @@
 #!/bin/bash
 
 # Parameters
-algo=(sparselu)
-msize=(32)
+algo=(qr)
+msize=(1024)
 bsize=(16)
 threads=(7)		# numactl --physcpubind ---> number of threads - 1
 numa=7			# numactl --membind ---> number of cores per NUMA node
 targets=("6") # "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
 
 export TPM_TRACE=1
-export TPM_POWER=1
+export TPM_TRACE_NO_OMPT=0
+export TPM_POWER=0
 
 frequency=min
 governor=ondemand
@@ -22,8 +23,9 @@ export OMP_PROC_BIND=close
 
 # LD_PRELOAD
 ROOT=/home/xps/Work/Software
-trace_so=${ROOT}/tpm/trace/libtpm_trace.so
 omp_so=${ROOT}/llvm-project/build-openmp/lib/libomp.so
+trace_so=${ROOT}/tpm/trace/libtpm_trace.so
+trace_no_ompt_so=${ROOT}/tpm/trace_no_ompt/libtpm_trace_no_ompt.so
 
 ######################################################
 
@@ -31,7 +33,19 @@ omp_so=${ROOT}/llvm-project/build-openmp/lib/libomp.so
 if [[ ${TPM_TRACE} -eq 1 ]]
 then
     cd trace
-    rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt Makefile
+    rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt Makefile libtpm_trace.so
+    cmake .
+    make clean && make -s
+    cd -
+    echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+    echo "TPM bash log: Trace OK" 
+    echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+fi
+
+if [[ ${TPM_TRACE_NO_OMPT} -eq 1 ]]
+then
+    cd trace_no_ompt
+    rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt Makefile libtpm_trace_no_ompt.so
     cmake .
     make clean && make -s
     cd -
@@ -97,13 +111,12 @@ do
 					else
 						if [[ ${TPM_TRACE} -eq 1 ]]
 						then
-                            #result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
-							LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
-							#LD_PRELOAD=$omp_so:$trace_so gdb --args algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
-						else
-							#result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
-							LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
-							#LD_PRELOAD=$omp_so:$trace_so gdb --args algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile
+                            result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+                        elif [[ ${TPM_TRACE_NO_OMPT} -eq 1 ]]
+						then
+                            result=$(LD_PRELOAD=$omp_so:$trace_no_ompt_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+                        else
+							result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 						fi
 					fi
 					#if [[ ${TPM_POWER} -eq 1 ]]
