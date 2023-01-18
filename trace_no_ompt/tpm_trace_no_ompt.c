@@ -28,7 +28,8 @@ FILE *file;
 
 bool user_iter(const void *item, void *udata) {
     tpm_task_t *user = item;
-    double tmp = user->end_time - user->start_time;   // in us
+    //FIXME
+    long double tmp = user->end_time - user->start_time;   // in us
 	fprintf(file, "%s, %f\n", user->name, tmp*1e-3);  // in ms
     return true;
 }
