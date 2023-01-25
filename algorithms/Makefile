@@ -1,7 +1,7 @@
 # OMPT doesn't seem to be working properly with clang-15
 
 # Path
-ROOT=/home/xps/Work/Software
+ROOT=
 
 # Compiler
 CC=clang
