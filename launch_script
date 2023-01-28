@@ -6,13 +6,13 @@ msize=$2
 bsize=$3
 threads=$4		# numactl --physcpubind ---> number of threads - 1
 numa=$5			# numactl --membind ---> number of cores per NUMA node
-targets=("6") # "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
+targets=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
 
 export TPM_TRACE=0
 export TPM_TRACE_NO_OMPT=1
 export TPM_POWER=1
 
-frequency=min
+frequency=$7
 governor=ondemand
 
 export TPM_MACHINE=$6
@@ -91,7 +91,11 @@ do
 					echo "TPM bash log: Launching" $algorithm "run with parameters" $matrix $tile $target "for" $(expr $thread + 1) "threads"
 					echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 					export OMP_NUM_THREADS=$(expr $thread + 1)
-	
+
+                    if [[ "$algorithm" == "lu" ]];
+                    then
+                        targets=("1" "2" "3" "4" "5" "6" "7" "8")
+                    fi
 					# Start server
 					if [[ ${TPM_POWER} -eq 1 ]]
 					then
