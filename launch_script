@@ -4,8 +4,8 @@
 algo=$1
 msize=$2
 bsize=$3
-threads=$4		# numactl --physcpubind ---> number of threads - 1
-numa=$5			# numactl --membind ---> number of cores per NUMA node
+threads=$4
+numa=$5
 targets=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
 iteration=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
 
@@ -91,9 +91,9 @@ do
 				    for target in ${targets[*]}
                     do
                         echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-					    echo "TPM bash log: Launching" $algorithm "run with parameters" $matrix $tile $target "for" $(expr $thread + 1) "threads"
+					    echo "TPM bash log: Launching" $algorithm "run with parameters" $matrix $tile $target "for" $thread "threads"
 					    echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-					    export OMP_NUM_THREADS=$(expr $thread + 1)
+					    export OMP_NUM_THREADS=$thread
 
                         if [[ "$algorithm" == "lu" ]];
                         then
@@ -102,7 +102,7 @@ do
 					    # Start server
 					    if [[ ${TPM_POWER} -eq 1 ]]
 					    then
-					    	sudo -E power/tpm_server $(expr $thread + 1) $governor $frequency $target ${algo} & 
+					    	sudo -E power/tpm_server $thread $governor $frequency $target ${algo} & 
 	                        sleep 1
                             echo "BASH LAUNCHED SERVER"
 					    fi
@@ -111,22 +111,22 @@ do
 					    then
 					    	if [[ ${TPM_TRACE} -eq 1 ]]
 					    	then
-					    		result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+					    		result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 					    	else
-					    		result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+					    		result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 					    	fi
 					    else
 					    	if [[ ${TPM_TRACE} -eq 1 ]]
 					    	then
-                                result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+                                result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
                             elif [[ ${TPM_TRACE_NO_OMPT} -eq 1 ]]
 					    	then
-                                result=$(LD_PRELOAD=$omp_so:$trace_no_ompt_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+                                result=$(LD_PRELOAD=$omp_so:$trace_no_ompt_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
                             else
-					    		result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$thread --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+					    		result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 					    	fi
 					    fi
-					    FILE_NAME=time_${algorithm}_${matrix}_${tile}_$(expr $thread + 1)
+					    FILE_NAME=time_${algorithm}_${matrix}_${tile}_${thread}
 cat <<EOF >> ${FILE_NAME}.dat
 $result 
 EOF
