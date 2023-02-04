@@ -90,9 +90,7 @@ do
 				do
 				    for target in ${targets[*]}
                     do
-                        echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-					    echo "TPM bash log: Launching" $algorithm "run with parameters" $matrix $tile $target "for" $thread "threads"
-					    echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+					    echo "TPM bash log: Launching" $algorithm "run with parameters" $matrix $tile "in scenario" $target "for" $thread "threads in iteration" $iter
 					    export OMP_NUM_THREADS=$thread
 
                         if [[ "$algorithm" == "lu" ]];
