@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set OpenBLAS threads to 1
+export OPENBLAS_NUM_THREADS=1
+
 # Parameters
 algo=$1
 msize=$2
