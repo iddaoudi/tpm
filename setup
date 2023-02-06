@@ -1,0 +1,188 @@
+#!/bin/bash
+
+setup=$1
+address=$2
+machine=$3
+threads=$4
+numa=$5
+
+# Abort script in case any command fails
+set -e
+
+# Private keys setup
+cd
+cd Work/
+chmod 600 idmac.pem
+ssh-add idmac.pem
+cd
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Private key permissions OK"
+
+
+if [[ $setup -eq 1 ]];
+then
+    # Connect to server
+    ssh -o StrictHostKeyChecking=accept-new cc@${address} <<'ENDSSH'
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SSH connexion OK"
+    
+    # Inside server
+    #
+    # General update
+    sudo apt update -y
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Update and upgrade OK"
+    
+    install_deps=1
+    enable_acpi=1
+    
+    if [[ $install_deps -eq 1 ]];
+    then
+        sudo apt install cmake -y
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CMake OK"
+        
+        sudo apt install clang -y
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Clang OK"
+    
+        # LLVM OpenMP
+        FILE=llvm-project/build-openmp/include/omp.h
+        if [[ -f "$FILE" ]];
+        then
+            echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LLVM already installed, skipping"
+        else
+            git clone https://github.com/llvm/llvm-project.git
+            cd llvm-project
+            mkdir build-openmp
+            cd build-openmp
+            cmake ../openmp -G "Unix Makefiles" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release  -DOPENMP_ENABLE_LIBOMPTARGET=OFF -DLIBOMP_OMPT_OPTIONAL=ON -DCMAKE_INSTALL_PREFIX=.
+            make -j16
+            make install
+            cd
+            echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LLVM OK"
+        fi
+    
+        # OpenBLAS
+        FILE=OpenBLAS/build/include/lapacke.h
+        if [[ -f "$FILE" ]];
+        then
+            echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> OpenBLAS already installed, skipping"
+        else
+            git clone https://github.com/xianyi/OpenBLAS.git
+            cd OpenBLAS
+            mkdir build
+            make -j 12 USE_THREAD=1 NUM_BUFFERS=512 NUM_THREADS=512 CC=clang CXX=clang++
+            make PREFIX=build/ install
+            cd
+            echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> OpenBLAS OK"
+        fi
+    
+        # NUMACTL
+        sudo apt install numactl -y
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Numactl OK"
+    
+        # ZMQ
+        sudo apt install libzmq3-dev -y
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ZMQ OK"
+    
+        # CPUFreqUtils
+        sudo apt install cpufrequtils libcpufreq-dev -y
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CPUFreq OK"
+    
+        # ACPI
+        sudo apt install acpi-support acpid acpi -y
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ACPI OK"
+    fi
+    
+    driver_ok=
+    if [[ $enable_acpi -eq 1 ]];
+    then
+        if grep -Fq intel_pstate=disable /etc/default/grub;
+        then
+            driver_ok=1
+            echo "Grub file already set, skipping"
+        else
+            driver_ok=0
+            # Change grub file to disable intel_pstate driver
+            sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=".*"$/s/"$/ intel_pstate=disable"/' /etc/default/grub
+            sudo sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT=".*"$/s/"$/ intel_pstate=disable"/' /etc/default/grub.d/50-cloudimg-settings.cfg
+            sudo update-grub
+            sudo reboot &
+            echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Grub OK"
+        fi
+    fi
+    
+    # Close SSH anyway
+ENDSSH
+    
+    if [[ $driver_ok -eq 0 ]];
+    then
+        # Wait for the machine to reboot if needed
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Waiting 600 seconds for machine to reboot..."
+        sleep 600
+    fi
+fi
+
+# Reconnect to server
+rm ~/.ssh/known_hosts
+ssh -o StrictHostKeyChecking=accept-new cc@${address} <<'ENDSSH'
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SSH connexion OK"
+
+# TPM
+FILE=tpm/launch_script
+if [[ -f "$FILE" ]];
+then
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TPM already installed, skipping"
+else
+    git clone https://github.com/iddaoudi/tpm.git
+fi
+
+# Get root path for tpm Makefiles
+ROOT_MAKEFILE="ROOT=$(pwd)"
+ROOT_CMAKELIST="ROOT $(pwd)"
+
+cd tpm
+sed -i "s|\ROOT=|$ROOT_MAKEFILE|" algorithms/Makefile
+sed -i "s|\ROOT=|$ROOT_MAKEFILE|" launch_script
+sed -i "s|\ROOT |$ROOT_CMAKELIST|" trace_no_ompt/CMakeLists.txt
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/cc/OpenBLAS/build/lib
+
+# Format: source launch_script algorithm msize bsize nthreads numa machine_name frequency
+source launch_script qr 8192 256 ${numa} ${numa} ${machine} mid
+source launch_script qr 8192 256 ${threads} ${numa} ${machine} mid
+source launch_script qr 8192 256 ${numa} ${numa} ${machine} min
+source launch_script qr 8192 256 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp qr 1 OK"
+source launch_script qr 8192 512 ${numa} ${numa} ${machine} mid
+source launch_script qr 8192 512 ${threads} ${numa} ${machine} mid
+source launch_script qr 8192 512 ${numa} ${numa} ${machine} min
+source launch_script qr 8192 512 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp qr 2 OK"
+source launch_script cholesky 8192 256 ${numa} ${numa} ${machine} mid
+source launch_script cholesky 8192 256 ${threads} ${numa} ${machine} mid
+source launch_script cholesky 8192 256 ${numa} ${numa} ${machine} min
+source launch_script cholesky 8192 256 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp cholesky 1 OK"
+source launch_script cholesky 8192 512 ${numa} ${numa} ${machine} mid
+source launch_script cholesky 8192 512 ${threads} ${numa} ${machine} mid
+source launch_script cholesky 8192 512 ${numa} ${numa} ${machine} min
+source launch_script cholesky 8192 512 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp cholesky 2 OK"
+source launch_script lu 8192 256 ${numa} ${numa} ${machine} mid
+source launch_script lu 8192 256 ${threads} ${numa} ${machine} mid
+source launch_script lu 8192 256 ${numa} ${numa} ${machine} min
+source launch_script lu 8192 256 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp lu 1 OK"
+source launch_script lu 8192 512 ${numa} ${numa} ${machine} mid
+source launch_script lu 8192 512 ${threads} ${numa} ${machine} mid
+source launch_script lu 8192 512 ${numa} ${numa} ${machine} min
+source launch_script lu 8192 512 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp lu 2 OK"
+ENDSSH
+scp -r cc@${address}:/home/cc/tpm/results/${machine}* results/
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SCP OK"
+
+#python3 results/plot/plot_bars.py
+#echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Plot OK"
+
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All OK"
+
+
+
