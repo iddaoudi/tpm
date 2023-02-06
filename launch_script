@@ -110,7 +110,10 @@ do
 					    	if [[ ${TPM_TRACE} -eq 1 ]]
 					    	then
 					    		result=$(LD_PRELOAD=$omp_so:$trace_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
-					    	else
+                            elif [[ ${TPM_TRACE_NO_OMPT} -eq 1 ]]
+					    	then
+                                result=$(LD_PRELOAD=$omp_so:$trace_no_ompt_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
+                            else
 					    		result=$(LD_PRELOAD=$omp_so numactl --physcpubind=0-$(expr $thread - 1) --membind=0,1 algorithms/tpm_benchmark -a $algorithm -m $matrix -b $tile)
 					    	fi
 					    else
