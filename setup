@@ -121,28 +121,28 @@ fi
 
 # Reconnect to server
 rm ~/.ssh/known_hosts
-ssh -o StrictHostKeyChecking=accept-new cc@${address} <<'ENDSSH'
+ssh -o StrictHostKeyChecking=accept-new cc@${address} <<ENDSSH
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SSH connexion OK"
 
 # TPM
 FILE=tpm/launch_script
-if [[ -f "$FILE" ]];
+if [[ -f "\$FILE" ]];
 then
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TPM already installed, skipping"
-else
-    git clone https://github.com/iddaoudi/tpm.git
+    rm -rf tpm
 fi
 
+git clone https://github.com/iddaoudi/tpm.git
+
 # Get root path for tpm Makefiles
-ROOT_MAKEFILE="ROOT=$(pwd)"
-ROOT_CMAKELIST="ROOT $(pwd)"
+ROOT_MAKEFILE="ROOT=\$(pwd)"
+ROOT_CMAKELIST="ROOT \$(pwd)"
 
 cd tpm
-sed -i "s|\ROOT=|$ROOT_MAKEFILE|" algorithms/Makefile
-sed -i "s|\ROOT=|$ROOT_MAKEFILE|" launch_script
-sed -i "s|\ROOT |$ROOT_CMAKELIST|" trace_no_ompt/CMakeLists.txt
+sed -i "s|\ROOT=|\$ROOT_MAKEFILE|" algorithms/Makefile
+sed -i "s|\ROOT=|\$ROOT_MAKEFILE|" launch_script
+sed -i "s|\ROOT |\$ROOT_CMAKELIST|" trace_no_ompt/CMakeLists.txt
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/cc/OpenBLAS/build/lib
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/home/cc/OpenBLAS/build/lib
 
 # Format: source launch_script algorithm msize bsize nthreads numa machine_name frequency
 source launch_script qr 8192 256 ${numa} ${numa} ${machine} mid
