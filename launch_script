@@ -10,7 +10,7 @@ bsize=$3
 threads=$4
 numa=$5
 targets=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16")
-iteration=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
+iteration=("1" "2" "3" "4" "5")
 
 export TPM_TRACE=0
 export TPM_TRACE_NO_OMPT=1
