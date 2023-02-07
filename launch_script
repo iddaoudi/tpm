@@ -33,6 +33,11 @@ trace_no_ompt_so=${ROOT}/tpm/trace_no_ompt/libtpm_trace_no_ompt.so
 
 ######################################################
 
+if [[ "$algo" -eq "qr" ]];
+then
+    ulimit -s unlimited
+fi
+
 # Compile trace library part
 if [[ ${TPM_TRACE} -eq 1 ]]
 then
