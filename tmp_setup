@@ -1,0 +1,64 @@
+#!/bin/bash
+
+machine=skylake
+threads=48
+numa=24
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/cc/OpenBLAS/build/lib
+
+#source launch_script qr 16384 256 ${numa} ${numa} ${machine} mid
+#source launch_script qr 16384 256 ${threads} ${numa} ${machine} mid
+#source launch_script qr 16384 256 ${numa} ${numa} ${machine} min
+#source launch_script qr 16384 256 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp qr 1 OK"
+#source launch_script qr 16384 512 ${numa} ${numa} ${machine} mid
+source launch_script qr 16384 512 ${threads} ${numa} ${machine} mid
+source launch_script qr 16384 512 ${numa} ${numa} ${machine} min
+source launch_script qr 16384 512 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp qr 2 OK"
+source launch_script qr 16384 1024 ${numa} ${numa} ${machine} mid
+source launch_script qr 16384 1024 ${threads} ${numa} ${machine} mid
+source launch_script qr 16384 1024 ${numa} ${numa} ${machine} min
+source launch_script qr 16384 1024 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp qr 3 OK"
+source launch_script cholesky 16384 256 ${numa} ${numa} ${machine} mid
+source launch_script cholesky 16384 256 ${threads} ${numa} ${machine} mid
+source launch_script cholesky 16384 256 ${numa} ${numa} ${machine} min
+source launch_script cholesky 16384 256 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp cholesky 1 OK"
+source launch_script cholesky 16384 512 ${numa} ${numa} ${machine} mid
+source launch_script cholesky 16384 512 ${threads} ${numa} ${machine} mid
+source launch_script cholesky 16384 512 ${numa} ${numa} ${machine} min
+source launch_script cholesky 16384 512 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp cholesky 2 OK"
+source launch_script cholesky 16384 1024 ${numa} ${numa} ${machine} mid
+source launch_script cholesky 16384 1024 ${threads} ${numa} ${machine} mid
+source launch_script cholesky 16384 1024 ${numa} ${numa} ${machine} min
+source launch_script cholesky 16384 1024 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp cholesky 3 OK"
+source launch_script lu 16384 256 ${numa} ${numa} ${machine} mid
+source launch_script lu 16384 256 ${threads} ${numa} ${machine} mid
+source launch_script lu 16384 256 ${numa} ${numa} ${machine} min
+source launch_script lu 16384 256 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp lu 1 OK"
+source launch_script lu 16384 512 ${numa} ${numa} ${machine} mid
+source launch_script lu 16384 512 ${threads} ${numa} ${machine} mid
+source launch_script lu 16384 512 ${numa} ${numa} ${machine} min
+source launch_script lu 16384 512 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp lu 2 OK"
+source launch_script lu 16384 1024 ${numa} ${numa} ${machine} mid
+source launch_script lu 16384 1024 ${threads} ${numa} ${machine} mid
+source launch_script lu 16384 1024 ${numa} ${numa} ${machine} min
+source launch_script lu 16384 1024 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp lu 3 OK"
+source launch_script sparselu 128 32 ${numa} ${numa} ${machine} mid
+source launch_script sparselu 128 32 ${threads} ${numa} ${machine} mid
+source launch_script sparselu 128 32 ${numa} ${numa} ${machine} min
+source launch_script sparselu 128 32 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp sparselu 1 OK"
+source launch_script sparselu 128 64 ${numa} ${numa} ${machine} mid
+source launch_script sparselu 128 64 ${threads} ${numa} ${machine} mid
+source launch_script sparselu 128 64 ${numa} ${numa} ${machine} min
+source launch_script sparselu 128 64 ${threads} ${numa} ${machine} min
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Exp sparselu 2 OK"
+
