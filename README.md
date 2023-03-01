@@ -21,7 +21,7 @@ Either use or get the inspiration from the ```launch_script```: parameters that 
 * Cholesky: matrix sizes of ```8192```, ```16384```, ```24576```, ```32768``` with bloc sizes of ```512``` or ```1024```
 * QR: matrix sizes of ```8192```, ```16384```, ```24576```, ```32768``` with bloc sizes of ```512``` or ```1024```
 * LU: matrix sizes of ```8192```, ```16384```, ```24576```, ```32768``` with bloc sizes of ```512``` or ```1024```
-* SparseLU: matrix sizes of ```64```, ```128```, ```256``` with bloc sizes of ```32```, ```64``` or ```128```
+* SparseLU: matrix sizes of ```64```, ```128``` with bloc sizes of ```32``` or ```64```
 * Poisson: TBD
 
 Always make sure to use powers of 2, and bloc sizes always have to divide matrix sizes.

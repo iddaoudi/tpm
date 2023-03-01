@@ -8,9 +8,9 @@ export OPENBLAS_NUM_THREADS=1
 ######################################################
 
 # Parameters
-algo=cholesky
-msize=1024
-bsize=512
+algo=sparselu
+msize=128
+bsize=64
 threads=6
 numa=12
 ROOT=/home/idriss/Work/Software
@@ -18,10 +18,6 @@ ROOT=/home/idriss/Work/Software
 ######################################################
 ########## No modifications after this line ##########
 ######################################################
-
-export TPM_TRACE=0
-export TPM_TRACE_NO_OMPT=0
-export TPM_POWER=0
 
 export TPM_MACHINE=local
 export OMP_PLACES=cores
@@ -42,7 +38,7 @@ fi
 
 # Compile source part
 cd algorithms
-make clean && make -s
+make clean -s && make -s
 cd -
 
 ######################################################
