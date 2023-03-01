@@ -6,12 +6,20 @@ set -e
 # General update
 sudo apt update -y
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Update and upgrade OK"
-    
+
+# CMAKE
 sudo apt install cmake -y
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CMake OK"
 
+# CLANG
 sudo apt install clang -y
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Clang OK"
+
+# NUMACTL
+sudo apt install numactl -y
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Numactl OK"
+
+cd ..
 
 # LLVM OpenMP
 FILE=llvm-project/build-openmp/include/omp.h
@@ -45,8 +53,4 @@ else
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> OpenBLAS OK"
 fi
 
-# NUMACTL
-sudo apt install numactl -y
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Numactl OK"
-
-
+cd tpm/
