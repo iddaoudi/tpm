@@ -1,7 +1,7 @@
 # OMPT doesn't seem to be working properly with clang-15
 
 # Path
-ROOT=
+ROOT=/home/idriss/Work/Software
 
 # Compiler
 CC=clang

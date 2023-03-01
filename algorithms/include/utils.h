@@ -70,5 +70,3 @@ int MSIZE, BSIZE, NTH, TPM_TRACE, TPM_TRACE_NO_OMPT;
 #include "../sparse/srcslu/fwd.h"
 #include "../sparse/sparselu.h"
 // clang-format on
-
-#include "../../power/include/rapl.h"
