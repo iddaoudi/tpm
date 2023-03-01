@@ -6,6 +6,7 @@ Task power management
 
 ## Dependences
 * Clang10
+* CMake
 * Numactl (latest)
 * OpenBLAS (latest)
 * LLVM OpenMP with OMPT support (latest)
