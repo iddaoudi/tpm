@@ -8,7 +8,7 @@ CC=clang
 CXX=clang++
 
 # C flags
-CFLAGS+=-std=gnu99 -rdynamic -ldl -lpapi
+CFLAGS+=-std=gnu99 -O2 -rdynamic -ldl -lpapi -mcmodel=large
 FLAGS_OPENMP=-fopenmp
 
 # Trace library
