@@ -16,9 +16,10 @@
  * =====================================================================================
  */
 
+#include <papi.h>
 #include "include/common.h"
 #include "include/utils.h"
-#include <papi.h>
+#include <pthread.h>
 
 int tpm_allocate_tile(int M, tpm_desc **desc, int B) {
   int MT = M / B;
@@ -79,23 +80,12 @@ int main(int argc, char *argv[]) {
     printf("Tile size does not divide the matrix size. Aborting...\n");
     exit(EXIT_FAILURE);
   }
-
-  //long long values[6];
-  //int retval = PAPI_library_init(PAPI_VER_CURRENT);
-  //if (retval != PAPI_VER_CURRENT) {
-  //      printf("PAPI library init error!\n");
-  //      exit(1);
-  //}
-  //int events[6] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
-  //int eventset = PAPI_NULL;
-  //retval = PAPI_create_eventset(&eventset);
-  //if (retval != PAPI_OK) {
-  //      printf("PAPI_create_eventset error: %s\n", PAPI_strerror(retval));
-  //      exit(1);
-  //}
-  //PAPI_add_events(eventset, events, 6);
-  //int task_count = 0; 
-  
+ 
+  PAPI_library_init(PAPI_VER_CURRENT);
+  if (PAPI_thread_init(pthread_self) != PAPI_OK) {
+      printf("PAPI_thread_init problem\n");
+      exit(1);
+  }
   /* Launch algorithms */
   double time_start, time_finish;
   if (strcmp(algorithm, "sparselu")) {

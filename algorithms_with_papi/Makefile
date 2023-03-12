@@ -4,11 +4,11 @@
 ROOT=/home/cc
 
 # Compiler
-CC=clang
-CXX=clang++
+CC=gcc
+CXX=g++
 
 # C flags
-CFLAGS+=-std=gnu99 -O2 -rdynamic -ldl -lpapi -mcmodel=large
+CFLAGS+=-std=gnu99 -O2 -rdynamic -ldl 
 FLAGS_OPENMP=-fopenmp
 
 # Trace library
@@ -20,7 +20,7 @@ OPENMP_LIBRARY=-lomp -I$(LLVM_OMP_LIB)/include -L$(LLVM_OMP_LIB)/lib
 
 # OpenBLAS
 LAPACKE_LIB=${ROOT}/OpenBLAS/build
-LAPACKE_LIBRARY=-lopenblas -I${LAPACKE_LIB}/include -L${LAPACKE_LIB}/lib
+LAPACKE_LIBRARY=-lopenblas -I${LAPACKE_LIB}/include -L${LAPACKE_LIB}/lib -lpapi -mcmodel=large
 
 all: tpm_benchmark
 

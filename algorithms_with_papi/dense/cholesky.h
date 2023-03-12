@@ -16,52 +16,44 @@
  * =====================================================================================
  */
 
-#include <papi.h>
+#define NEVENTS 6
 
 void cholesky(tpm_desc A) {
   int k = 0, m = 0, n = 0;
   
-  // PAPI counters
-  int retval = PAPI_library_init(PAPI_VER_CURRENT);
-  if (retval != PAPI_VER_CURRENT) {
-  	printf("PAPI library init error!\n");
-        exit(1);
-  }
-  int events[6] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
-  int eventset = PAPI_NULL;
-  retval = PAPI_create_eventset(&eventset);
-  if (retval != PAPI_OK) {
-  	printf("PAPI_create_eventset error: %s\n", PAPI_strerror(retval));
-        exit(1);
-  }
-  PAPI_add_events(eventset, events, 6);
-  int task_count = 0;
-  int max_threads = omp_get_num_threads();
-  long long values_by_thread[max_threads][6];
-  memset(values_by_thread, 0, max_threads * 6 * sizeof(long long));
+  int events[NEVENTS] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
+  int available_threads = omp_get_max_threads();
+  
+  long long values_by_thread[available_threads][NEVENTS];
+  memset(values_by_thread, 0, sizeof(values_by_thread));
   
   for (k = 0; k < A.matrix_size / A.tile_size; k++) {
     double *tileA = A(k, k);
 
-#pragma omp task shared(task_count, values_by_thread, eventset)                              \
+#pragma omp task shared(values_by_thread)                              \
     depend(inout                                                               \
            : tileA [0:A.tile_size * A.tile_size])
     {
-        //long long values[6] = {0};
-	//PAPI_start(eventset);
-	LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'U', A.tile_size, tileA, A.tile_size);
-        //PAPI_stop(eventset, values);
-//#pragma //omp atomic update
-	//task_count++;
-	//int thread_num = omp_get_thread_num();
-	//for (int i = 0; i < 6; i++) {
-//#pragma //omp atomic update
-	//	values_by_thread[thread_num][i] += values[i];
-	//}
-	//printf("task count inside: %d\n", task_count);
-    	//for (int i = 0; i < 6; i++) {
-	//	printf("values %d for thread %d: %lld | %lld\n", i, thread_num, values[i], values_by_thread[thread_num][i]);
-	//}
+        long long values[NEVENTS];
+	    memset(values, 0, sizeof(values));
+        int eventset = PAPI_NULL;
+        int events[NEVENTS] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM, PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
+        if (PAPI_create_eventset(&eventset) != PAPI_OK) {
+            printf("PAPI_create_eventset error\n");
+            exit(1);
+        }
+        PAPI_add_events(eventset, events, NEVENTS);
+        
+        // Start the counters
+        PAPI_start(eventset);
+	    LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'U', A.tile_size, tileA, A.tile_size);
+        PAPI_stop(eventset, values);
+    
+        for (int i = 0; i < NEVENTS; i++) {
+#pragma omp atomic
+            values_by_thread[omp_get_thread_num()][i] += values[i];
+        }
+        PAPI_unregister_thread();
     }
     for (m = k + 1; m < A.matrix_size / A.tile_size; m++) {
       double *tileA = A(k, k);
@@ -99,49 +91,34 @@ void cholesky(tpm_desc A) {
         double *tileB = A(k, m);
         double *tileC = A(n, m);
 
-#pragma omp task shared( task_count, values_by_thread, eventset)                              \
+#pragma omp task                               \
     depend(in                                                                  \
            : tileA [0:A.tile_size * A.tile_size],                              \
              tileB [0:A.tile_size * A.tile_size])                              \
         depend(inout                                                           \
                : tileC [0:A.tile_size * A.tile_size])
         {
-         long long values[6] = {0};
-	 PAPI_start(eventset);
          cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, A.tile_size,
                       A.tile_size, A.tile_size, -1.0, tileA, A.tile_size, tileB,
                       A.tile_size, 1.0, tileC, A.tile_size);
-	 PAPI_stop(eventset, values);
-#pragma omp atomic update
-	 task_count++;
-	 int thread_num = omp_get_thread_num();
-	 for (int i = 0; i < 6; i++) {
-#pragma omp atomic update
-	 	values_by_thread[thread_num][i] += values[i];
-	 }
-	 printf("task count inside: %d\n", task_count);
-    	 for (int i = 0; i < 6; i++) {
-	 	printf("values %d for thread %d: %lld | %lld\n", i, thread_num, values[i], values_by_thread[thread_num][i]);
-	 }         
-		
         }
       }
     }
   }
-#pragma omp taskwait
-  long long final_values[6] = {0};
-  for (int i = 0; i < max_threads; i++) {
-  	for (int j = 0; j < 6; j++) {
-		final_values[j] += values_by_thread[i][j];
-	}
+ 
+  PAPI_shutdown();
+  long long total_values[NEVENTS];
+  memset(total_values, 0, sizeof(total_values));
+  for (int i = 0; i < NEVENTS; i++) {
+      for (int j = 0; j < available_threads; j++) {
+          total_values[i] += values_by_thread[j][i];
+      }
   }
-  PAPI_cleanup_eventset(eventset);
-  PAPI_destroy_eventset(&eventset);
-  double c_misses = (double) (final_values[0]); // + final_values[1] + final_values[2] + final_values[3]) / task_count;
-  double m_accesses = (double) ((final_values[4] + final_values[5])); // task_count); //FIXME
-  double ratio = c_misses / m_accesses;
-  printf("Task count: %d\n", task_count);
-  printf("Total cache misses: %f\n", c_misses);
-  printf("Total memory accesses: %f\n", m_accesses);
-  printf("Cache miss ratio: %f\n", ratio);
+
+  double total_c_misses = (double) (total_values[0] + total_values[1] + total_values[2] + total_values[3]);
+  double total_m_accesses = (double) ((total_values[4] + total_values[5]));
+  double total_ratio = total_c_misses / total_m_accesses;
+  printf("Total cache misses: %f\n", total_c_misses);
+  printf("Total memory accesses: %f\n", total_m_accesses);
+  printf("Cache miss ratio: %f\n", total_ratio);
 }
