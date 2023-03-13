@@ -202,18 +202,24 @@ void lu(tpm_desc A) {
   double total_ratio_trsm2 = total_c_misses_trsm2 / total_m_accesses_trsm2;
   double total_ratio_gemm = total_c_misses_gemm / total_m_accesses_gemm;
 
-  printf("Total cache misses getrf: %f\n", total_c_misses_getrf);
-  printf("Total cache misses trsm1: %f\n", total_c_misses_trsm1);
-  printf("Total cache misses trsm2: %f\n", total_c_misses_trsm2);
-  printf("Total cache misses gemm: %f\n", total_c_misses_gemm);
+  //printf("Total cache misses getrf: %f\n", total_c_misses_getrf);
+  //printf("Total cache misses trsm1: %f\n", total_c_misses_trsm1);
+  //printf("Total cache misses trsm2: %f\n", total_c_misses_trsm2);
+  //printf("Total cache misses gemm: %f\n", total_c_misses_gemm);
 
-  printf("Total memory accesses getrf: %f\n", total_m_accesses_getrf);
-  printf("Total memory accesses trsm1: %f\n", total_m_accesses_trsm1);
-  printf("Total memory accesses trsm2: %f\n", total_m_accesses_trsm2);
-  printf("Total memory accesses gemm: %f\n", total_m_accesses_gemm);
+  //printf("Total memory accesses getrf: %f\n", total_m_accesses_getrf);
+  //printf("Total memory accesses trsm1: %f\n", total_m_accesses_trsm1);
+  //printf("Total memory accesses trsm2: %f\n", total_m_accesses_trsm2);
+  //printf("Total memory accesses gemm: %f\n", total_m_accesses_gemm);
 
-  printf("Cache miss ratio getrf: %f\n", total_ratio_getrf);
-  printf("Cache miss ratio trsm1: %f\n", total_ratio_trsm1);
-  printf("Cache miss ratio trsm2: %f\n", total_ratio_trsm2);
-  printf("Cache miss ratio gemm: %f\n", total_ratio_gemm);
+  //printf("Cache miss ratio getrf: %f\n", total_ratio_getrf);
+  //printf("Cache miss ratio trsm1: %f\n", total_ratio_trsm1);
+  //printf("Cache miss ratio trsm2: %f\n", total_ratio_trsm2);
+  //printf("Cache miss ratio gemm: %f\n", total_ratio_gemm);
+
+  printf("ratio getrf %f\n", total_ratio_getrf);
+  printf("ratio trsm1 %f\n", total_ratio_trsm1);
+  printf("ratio trsm2 %f\n", total_ratio_trsm2);
+  printf("ratio gemm %f\n", total_ratio_gemm);
+
 }

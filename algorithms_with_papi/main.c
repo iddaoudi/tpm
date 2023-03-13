@@ -146,5 +146,5 @@ int main(int argc, char *argv[]) {
   }
   if (TPM_TRACE_NO_OMPT)
     tpm_upstream_finalize();
-  printf("%f\n", time_finish - time_start);
+  //printf("%f\n", time_finish - time_start);
 }

@@ -224,18 +224,24 @@ void qr(tpm_desc A, tpm_desc S) {
   double total_ratio_tsqrt = total_c_misses_tsqrt / total_m_accesses_tsqrt;
   double total_ratio_tsmqr = total_c_misses_tsmqr / total_m_accesses_tsmqr;
 
-  printf("Total cache misses geqrt: %f\n", total_c_misses_geqrt);
-  printf("Total cache misses ormqr: %f\n", total_c_misses_ormqr);
-  printf("Total cache misses tsqrt: %f\n", total_c_misses_tsqrt);
-  printf("Total cache misses tsmqr: %f\n", total_c_misses_tsmqr);
+  //printf("Total cache misses geqrt: %f\n", total_c_misses_geqrt);
+  //printf("Total cache misses ormqr: %f\n", total_c_misses_ormqr);
+  //printf("Total cache misses tsqrt: %f\n", total_c_misses_tsqrt);
+  //printf("Total cache misses tsmqr: %f\n", total_c_misses_tsmqr);
 
-  printf("Total memory accesses geqrt: %f\n", total_m_accesses_geqrt);
-  printf("Total memory accesses ormqr: %f\n", total_m_accesses_ormqr);
-  printf("Total memory accesses tsqrt: %f\n", total_m_accesses_tsqrt);
-  printf("Total memory accesses tsmqr: %f\n", total_m_accesses_tsmqr);
+  //printf("Total memory accesses geqrt: %f\n", total_m_accesses_geqrt);
+  //printf("Total memory accesses ormqr: %f\n", total_m_accesses_ormqr);
+  //printf("Total memory accesses tsqrt: %f\n", total_m_accesses_tsqrt);
+  //printf("Total memory accesses tsmqr: %f\n", total_m_accesses_tsmqr);
 
-  printf("Cache miss ratio geqrt: %f\n", total_ratio_geqrt);
-  printf("Cache miss ratio ormqr: %f\n", total_ratio_ormqr);
-  printf("Cache miss ratio tsqrt: %f\n", total_ratio_tsqrt);
-  printf("Cache miss ratio tsmqr: %f\n", total_ratio_tsmqr);
+  //printf("Cache miss ratio geqrt: %f\n", total_ratio_geqrt);
+  //printf("Cache miss ratio ormqr: %f\n", total_ratio_ormqr);
+  //printf("Cache miss ratio tsqrt: %f\n", total_ratio_tsqrt);
+  //printf("Cache miss ratio tsmqr: %f\n", total_ratio_tsmqr);
+
+  printf("geqrt %f\n", total_ratio_geqrt);
+  printf("ormqr %f\n", total_ratio_ormqr);
+  printf("tsqrt %f\n", total_ratio_tsqrt);
+  printf("tsmqr %f\n", total_ratio_tsmqr);
+
 }

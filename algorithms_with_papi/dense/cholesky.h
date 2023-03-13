@@ -211,19 +211,25 @@ void cholesky(tpm_desc A) {
   double total_ratio_syrk = total_c_misses_syrk / total_m_accesses_syrk;
   double total_ratio_gemm = total_c_misses_gemm / total_m_accesses_gemm;
 
-  printf("Total cache misses potrf: %f\n", total_c_misses_potrf);
-  printf("Total cache misses trsm: %f\n", total_c_misses_trsm);
-  printf("Total cache misses syrk: %f\n", total_c_misses_syrk);
-  printf("Total cache misses gemm: %f\n", total_c_misses_gemm);
+  //printf("Total cache misses potrf: %f\n", total_c_misses_potrf);
+  //printf("Total cache misses trsm: %f\n", total_c_misses_trsm);
+  //printf("Total cache misses syrk: %f\n", total_c_misses_syrk);
+  //printf("Total cache misses gemm: %f\n", total_c_misses_gemm);
 
-  printf("Total memory accesses potrf: %f\n", total_m_accesses_potrf);
-  printf("Total memory accesses trsm: %f\n", total_m_accesses_trsm);
-  printf("Total memory accesses syrk: %f\n", total_m_accesses_syrk);
-  printf("Total memory accesses gemm: %f\n", total_m_accesses_gemm);
+  //printf("Total memory accesses potrf: %f\n", total_m_accesses_potrf);
+  //printf("Total memory accesses trsm: %f\n", total_m_accesses_trsm);
+  //printf("Total memory accesses syrk: %f\n", total_m_accesses_syrk);
+  //printf("Total memory accesses gemm: %f\n", total_m_accesses_gemm);
 
-  printf("Cache miss ratio potrf: %f\n", total_ratio_potrf);
-  printf("Cache miss ratio trsm: %f\n", total_ratio_trsm);
-  printf("Cache miss ratio syrk: %f\n", total_ratio_syrk);
-  printf("Cache miss ratio gemm: %f\n", total_ratio_gemm);
+  //printf("Cache miss ratio potrf: %f\n", total_ratio_potrf);
+  //printf("Cache miss ratio trsm: %f\n", total_ratio_trsm);
+  //printf("Cache miss ratio syrk: %f\n", total_ratio_syrk);
+  //printf("Cache miss ratio gemm: %f\n", total_ratio_gemm);
+
+  printf("potrf %f\n", total_ratio_potrf);
+  printf("trsm %f\n", total_ratio_trsm);
+  printf("syrk %f\n", total_ratio_syrk);
+  printf("gemm %f\n", total_ratio_gemm);
+
 
 }
