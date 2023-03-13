@@ -30,9 +30,9 @@ void cholesky(tpm_desc A) {
   long long values_by_thread_syrk[available_threads][NEVENTS];
   long long values_by_thread_gemm[available_threads][NEVENTS];
   memset(values_by_thread_potrf, 0, sizeof(values_by_thread_potrf));
-  memset(values_by_thread_trsm, 0, sizeof(values_by_thread_potrf));
-  memset(values_by_thread_syrk, 0, sizeof(values_by_thread_potrf));
-  memset(values_by_thread_gemm, 0, sizeof(values_by_thread_potrf));
+  memset(values_by_thread_trsm, 0, sizeof(values_by_thread_trsm));
+  memset(values_by_thread_syrk, 0, sizeof(values_by_thread_syrk));
+  memset(values_by_thread_gemm, 0, sizeof(values_by_thread_gemm));
 
   for (k = 0; k < A.matrix_size / A.tile_size; k++) {
     double *tileA = A(k, k);
@@ -59,7 +59,7 @@ void cholesky(tpm_desc A) {
       PAPI_stop(eventset, values);
 
       for (int i = 0; i < NEVENTS; i++) {
-#pragma omp atomic
+#pragma omp atomic update
         values_by_thread_potrf[omp_get_thread_num()][i] += values[i];
       }
       PAPI_unregister_thread();
@@ -80,7 +80,7 @@ void cholesky(tpm_desc A) {
         int events[NEVENTS] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM,
                                PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
         if (PAPI_create_eventset(&eventset) != PAPI_OK) {
-          printf("PAPI_create_eventset error\n");
+          printf("TRSM - PAPI_create_eventset error\n");
           exit(1);
         }
         PAPI_add_events(eventset, events, NEVENTS);
@@ -93,7 +93,7 @@ void cholesky(tpm_desc A) {
         PAPI_stop(eventset, values);
 
         for (int i = 0; i < NEVENTS; i++) {
-#pragma omp atomic
+#pragma omp atomic update
           values_by_thread_trsm[omp_get_thread_num()][i] += values[i];
         }
         PAPI_unregister_thread();
@@ -116,7 +116,7 @@ void cholesky(tpm_desc A) {
         int events[NEVENTS] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM,
                                PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
         if (PAPI_create_eventset(&eventset) != PAPI_OK) {
-          printf("PAPI_create_eventset error\n");
+          printf("SYRK - PAPI_create_eventset error\n");
           exit(1);
         }
         PAPI_add_events(eventset, events, NEVENTS);
@@ -129,7 +129,7 @@ void cholesky(tpm_desc A) {
         PAPI_stop(eventset, values);
 
         for (int i = 0; i < NEVENTS; i++) {
-#pragma omp atomic
+#pragma omp atomic update
           values_by_thread_syrk[omp_get_thread_num()][i] += values[i];
         }
         PAPI_unregister_thread();
@@ -153,7 +153,7 @@ void cholesky(tpm_desc A) {
           int events[NEVENTS] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM,
                                  PAPI_TLB_DM, PAPI_LD_INS, PAPI_SR_INS};
           if (PAPI_create_eventset(&eventset) != PAPI_OK) {
-            printf("PAPI_create_eventset error\n");
+            printf("GEMM - PAPI_create_eventset error\n");
             exit(1);
           }
           PAPI_add_events(eventset, events, NEVENTS);
@@ -166,7 +166,7 @@ void cholesky(tpm_desc A) {
           PAPI_stop(eventset, values);
 
           for (int i = 0; i < NEVENTS; i++) {
-#pragma omp atomic
+#pragma omp atomic update
             values_by_thread_gemm[omp_get_thread_num()][i] += values[i];
           }
           PAPI_unregister_thread();
@@ -176,17 +176,17 @@ void cholesky(tpm_desc A) {
   }
 
   PAPI_shutdown();
-  
+
   long long total_values_potrf[NEVENTS];
   long long total_values_trsm[NEVENTS];
   long long total_values_syrk[NEVENTS];
   long long total_values_gemm[NEVENTS];
-  
+
   memset(total_values_potrf, 0, sizeof(total_values_potrf));
   memset(total_values_trsm, 0, sizeof(total_values_trsm));
   memset(total_values_syrk, 0, sizeof(total_values_syrk));
   memset(total_values_gemm, 0, sizeof(total_values_gemm));
-  
+
   for (int i = 0; i < NEVENTS; i++) {
     for (int j = 0; j < available_threads; j++) {
       total_values_potrf[i] += values_by_thread_potrf[j][i];
@@ -200,12 +200,12 @@ void cholesky(tpm_desc A) {
   double total_c_misses_trsm = (double)(total_values_trsm[0] + total_values_trsm[1] + total_values_trsm[2] + total_values_trsm[3]);
   double total_c_misses_syrk = (double)(total_values_syrk[0] + total_values_syrk[1] + total_values_syrk[2] + total_values_syrk[3]);
   double total_c_misses_gemm = (double)(total_values_gemm[0] + total_values_gemm[1] + total_values_gemm[2] + total_values_gemm[3]);
-  
+
   double total_m_accesses_potrf = (double)((total_values_potrf[4] + total_values_potrf[5]));
   double total_m_accesses_trsm = (double)((total_values_trsm[4] + total_values_trsm[5]));
   double total_m_accesses_syrk = (double)((total_values_syrk[4] + total_values_syrk[5]));
   double total_m_accesses_gemm = (double)((total_values_gemm[4] + total_values_gemm[5]));
-  
+
   double total_ratio_potrf = total_c_misses_potrf / total_m_accesses_potrf;
   double total_ratio_trsm = total_c_misses_trsm / total_m_accesses_trsm;
   double total_ratio_syrk = total_c_misses_syrk / total_m_accesses_syrk;
@@ -215,12 +215,12 @@ void cholesky(tpm_desc A) {
   printf("Total cache misses trsm: %f\n", total_c_misses_trsm);
   printf("Total cache misses syrk: %f\n", total_c_misses_syrk);
   printf("Total cache misses gemm: %f\n", total_c_misses_gemm);
-  
+
   printf("Total memory accesses potrf: %f\n", total_m_accesses_potrf);
   printf("Total memory accesses trsm: %f\n", total_m_accesses_trsm);
   printf("Total memory accesses syrk: %f\n", total_m_accesses_syrk);
   printf("Total memory accesses gemm: %f\n", total_m_accesses_gemm);
-  
+
   printf("Cache miss ratio potrf: %f\n", total_ratio_potrf);
   printf("Cache miss ratio trsm: %f\n", total_ratio_trsm);
   printf("Cache miss ratio syrk: %f\n", total_ratio_syrk);
