@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <papi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,16 +8,17 @@
 #include <pthread.h>
 
 #define N 4194304 // 2048 x 2048
-#define REPS 10
+#define REPS 1
 #define NEVENTS 6
+#define NTASKS 816
 //#define LOG 1
 
 int main() {
   double *a, *b;
-  if (posix_memalign((void **)&a, 64, N * sizeof(double)) != 0) {
+  if (posix_memalign((void **)&a, getpagesize(), N * sizeof(double)) != 0) {
     printf("Memory allocation problem for vector A\n");
   }
-  if (posix_memalign((void **)&b, 64, N * sizeof(double)) != 0) {
+  if (posix_memalign((void **)&b, getpagesize(), N * sizeof(double)) != 0) {
     printf("Memory allocation problem for vector A\n");
   }
 
@@ -42,7 +44,7 @@ int main() {
 #pragma omp parallel
 #pragma omp master
   {
-    for (int th = 0; th < 10 * available_threads; th++) {
+    for (int th = 0; th < NTASKS * available_threads; th++) {
 #pragma omp task firstprivate(a, b) shared(values_by_thread)
       {
         long long values[NEVENTS];
@@ -89,7 +91,7 @@ int main() {
   // Compute cache miss ratio for each thread
   for (int i = 0; i < available_threads; i++) {
     double thread_c_misses =
-        (long long)(values_by_thread[i][0] + values_by_thread[i][1] +
+        (long long)(values_by_thread[i][2] + values_by_thread[i][1] +
                     values_by_thread[i][2] + values_by_thread[i][3]);
     double thread_m_accesses =
         (long long)(values_by_thread[i][4] + values_by_thread[i][5]);
