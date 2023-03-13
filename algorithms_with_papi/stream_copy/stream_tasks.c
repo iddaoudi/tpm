@@ -6,7 +6,7 @@
 #include "omp.h"
 #include <pthread.h>
 
-#define N 4194304
+#define N 4194304 // 2048 x 2048
 #define REPS 10
 #define NEVENTS 6
 //#define LOG 1
@@ -45,7 +45,7 @@ int main() {
     for (int th = 0; th < 10 * available_threads; th++) {
 #pragma omp task firstprivate(a, b) shared(values_by_thread)
       {
-        long long values[6];
+        long long values[NEVENTS];
         memset(values, 0, sizeof(values));
         int eventset = PAPI_NULL;
         int events[NEVENTS] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM,
@@ -55,7 +55,7 @@ int main() {
           exit(1);
         }
         PAPI_add_events(eventset, events, NEVENTS);
-
+        
         // Start the counters
         PAPI_start(eventset);
         for (int j = 0; j < REPS; j++) {
